@@ -1,27 +1,36 @@
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import { Redirect, useRouter } from "expo-router";
+import { logout } from "@/utils/logout";
+import { Redirect, router } from "expo-router";
 import React from "react";
-import symbolicateStackTrace from "react-native/Libraries/Core/Devtools/symbolicateStackTrace";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../hooks/useAuth";
 
 const Dashboard = () => {
-  // Authentication state comes here
+  const { user, loading } = useAuth();
 
-  const handleLogOut = () => {
-    console.log("You are logged out");
-    // log out code comes here
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Redirect to sign-in if not authenticated
+  if (!user) {
+    return <Redirect href="/sign-in" />;
+  }
+
+  const handleLogOut = async () => {
+    await logout();
+    router.replace("/sign-in");
   };
 
-  // Loading and redirect code comes here
   return (
     <View style={styles.container}>
-      <Text style={styles.welcome}> Welcome </Text>
-      <Text style={styles.userEmail}>User comes here</Text>
-      <TouchableOpacity
-        style={styles.logOutButton}
-        onPress={() => {
-          console.log("Logged Out");
-        }}
-      >
+      <Text style={styles.welcome}>Welcome!</Text>
+      <Text style={styles.userEmail}>{user.email}</Text>
+      <TouchableOpacity style={styles.logOutButton} onPress={handleLogOut}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
     </View>

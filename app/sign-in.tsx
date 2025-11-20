@@ -1,14 +1,16 @@
+import { useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { Formik } from "formik";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
-  View,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { Formik } from "formik";
 import * as Yup from "yup";
-import React from "react";
+import { auth } from "../lib/firebase";
 
 interface SignInFormValues {
   email: string;
@@ -26,10 +28,17 @@ const signInSchema = Yup.object().shape({
 
 const SignIn = () => {
   const router = useRouter();
+  const [firebaseError, setFirebaseError] = useState<string | null>(null);
 
   const handleLogin = async (values: SignInFormValues) => {
-    // Placeholder for Firebase authentication logic
-    console.log("Logging in with:", values);
+    try {
+      setFirebaseError(null);
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      // Navigate to dashboard after successful sign-in
+      router.replace("/dashboard");
+    } catch (error: any) {
+      setFirebaseError(error.message || "Login Failed");
+    }
   };
 
   return (
@@ -72,9 +81,10 @@ const SignIn = () => {
             {touched.password && errors.password && (
               <Text style={styles.error}>{errors.password}</Text>
             )}
+            {firebaseError && <Text style={styles.error}>{firebaseError}</Text>}
 
             <TouchableOpacity
-              onPress={handleSubmit}
+              onPress={() => handleSubmit()}
               style={styles.submitButton}
             >
               <Text style={styles.submitButtonText}>Sign In</Text>
